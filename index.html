@@ -18,9 +18,10 @@ body {
     flex-direction: row;
     align-items: stretch;
 }
-#side-panel {
-    flex-basis: 500px;
-    overflow-y: scroll;
+@media (max-width: 1024px) {
+    #side-panel {
+        display: none;
+    }
 }
 
 #map {
@@ -58,7 +59,7 @@ tr:nth-child(even) {
                 <tr>
                     <th>id</th>
                     <th>magnitude</th>
-                    <th>timestamp</th>
+                    <th>year</th>
                 </tr>
             </table>
  
@@ -71,25 +72,25 @@ let map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/satellite-streets-v12',
     zoom: 5.5,
-    center: [138, 38]
+    center: [-119.44317, 35.46751]
 });
 
 async function geojsonFetch() {
-    let response, earthquakes, japan, table;
+    let response, earthquakes, california, table;
     
-    response = await fetch('assets/earthquakes.geojson');
+    response = await fetch('assets/california2.geojson');
+    california = await response.json();
+    
+    response = await fetch('assets/california.geojson');
     earthquakes = await response.json();
-    
-    response = await fetch('assets/japan.json');
-    japan = await response.json();
 
     // Populate the table
     table = document.getElementsByTagName("table")[0];
     for (let i = 0; i < earthquakes.features.length; i++) {
         let row = table.insertRow(-1);
-        row.insertCell(0).innerHTML = earthquakes.features[i].properties.id;
-        row.insertCell(1).innerHTML = earthquakes.features[i].properties.mag;
-        row.insertCell(2).innerHTML = new Date(earthquakes.features[i].properties.time).toLocaleDateString("en-US");
+        row.insertCell(0).innerHTML = earthquakes.features[i].properties.OBJECTID_1;
+        row.insertCell(1).innerHTML = earthquakes.features[i].properties.magnitude;
+        row.insertCell(2).innerHTML = earthquakes.features[i].properties.year;
     }
 
     // Wait for map to load before adding sources and layers
@@ -100,7 +101,7 @@ async function geojsonFetch() {
             data: earthquakes
         });
 
-        // Add earthquake layer
+ 
         map.addLayer({
             'id': 'earthquakes-layer',
             'type': 'circle',
@@ -113,21 +114,22 @@ async function geojsonFetch() {
             }
         });
 
-        // Add Japan boundary source
-        map.addSource('japan', {
+
+        map.addSource('california', {
             type: 'geojson',
-            data: japan
+            data: california
         });
 
-        // Add Japan layer
+
         map.addLayer({
-            'id': 'japan-layer',
+            'id': 'california-layer',
             'type': 'fill',
-            'source': 'japan',
+            'source': 'california',
             'paint': {
                 'fill-color': '#5DADE2',
-                'fill-opacity': 0.5
-            }
+                'fill-outline-color':'lightgrey',
+                'fill-opacity': 0.5   
+                    }
         });
     });
 }
